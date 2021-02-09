@@ -14,4 +14,4 @@ COPY app app
 COPY $AUTH_PRIVATE_KEY_FILE .
 
 EXPOSE 8080
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "$WORKERS_COUNT", "--log-level", "$LOGGING_LEVEL"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers ${WORKERS_COUNT} --log-level ${LOGGING_LEVEL}"]
