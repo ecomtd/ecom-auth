@@ -1,4 +1,4 @@
-import settings
+import app.settings as settings
 import psycopg2
 from psycopg2 import pool, extras
 from fastapi import Depends

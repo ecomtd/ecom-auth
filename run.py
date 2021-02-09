@@ -1,7 +1,7 @@
 import sys
 import logging
 import uvicorn
-from app.main import app
+import app.settings as settings
 
 
 if __name__ == '__main__':
@@ -13,4 +13,8 @@ if __name__ == '__main__':
         logger.setLevel(logging.DEBUG)
         logger.handlers.clear()
         logger.addHandler(handler)
-    uvicorn.run(app, host=app.settings.api_local_ip_address, port=app.settings.api_local_ip_port, log_level='debug')
+    uvicorn.run("app.main:app",
+                host=settings.api_local_ip_address,
+                port=settings.api_local_ip_port,
+                log_level=settings.logging_level,
+                workers=settings.workers_count)

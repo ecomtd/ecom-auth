@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse, Response
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_200_OK
 import hashlib
-import settings
+import app.settings as settings
 from app.token import create
 from app.database import get_db_cursor
 from app.models import JWTToken, UserCredentials, ErrorMessage, Fingerprint

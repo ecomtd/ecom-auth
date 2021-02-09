@@ -1,5 +1,5 @@
 import jwt
-import settings
+import app.settings as settings
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
 from cryptography.hazmat.primitives.serialization import load_pem_private_key

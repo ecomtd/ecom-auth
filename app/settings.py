@@ -3,6 +3,8 @@ import os
 
 api_local_ip_address = os.environ['API_LOCAL_IP_ADDRESS']
 api_local_ip_port = int(os.environ['API_LOCAL_IP_PORT'])
+workers_count = int(os.environ['WORKERS_COUNT'])
+logging_level = os.environ['LOGGING_LEVEL']
 api_domain = os.environ['API_DOMAIN']
 api_path = os.environ['API_PATH']
 db_min_connections = os.environ['DB_MIN_CONNECTIONS']
