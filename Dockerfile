@@ -2,7 +2,8 @@ FROM python:slim
 
 RUN apt-get update \
     && apt-get -y install unzip \
-    && apt-get -y install libaio-dev
+    && apt-get -y install libaio-dev \
+    && apt-get -y install libpq-dev
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
