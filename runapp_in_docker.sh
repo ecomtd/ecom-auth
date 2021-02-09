@@ -11,6 +11,8 @@ docker image build -t ecom_auth:$APP_TAG .
 docker run -d -p $API_LOCAL_IP_ADDRESS:$API_LOCAL_IP_PORT:8080 \
 --restart always --log-driver=syslog --log-opt tag=ecom_auth \
 -e TZ=Europe/Moscow \
+-e API_LOCAL_IP_ADDRESS=$API_LOCAL_IP_ADDRESS \
+-e API_LOCAL_IP_PORT=$API_LOCAL_IP_PORT \
 -e WORKERS_COUNT=$WORKERS_COUNT \
 -e LOGGING_LEVEL=$LOGGING_LEVEL \
 -e DB_USER_NAME=$DB_USER_NAME \
