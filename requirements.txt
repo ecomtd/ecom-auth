@@ -4,4 +4,4 @@ uvicorn
 email-validator
 pyjwt
 cryptography
-psycopg2
+psycopg2-binary
