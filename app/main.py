@@ -24,7 +24,7 @@ app = FastAPI(
 )
 
 
-@app.post("/auth/login", response_model=JWTToken, tags=["Auth"],
+@app.post("/login", response_model=JWTToken, tags=["Auth"],
           summary="Авторизация в системе",
           description="Авторизация пользователя в системе по email и паролю",
           response_description="При успешной авторизации возвращается token-ы, "
