@@ -1,6 +1,7 @@
-pydantic~=1.7.3
-fastapi~=0.63.0
-uvicorn~=0.13.3
+pydantic
+fastapi
+uvicorn
 email-validator
-pyjwt~=2.0.1
-cryptography~=3.3.1
+pyjwt
+cryptography
+psycopg2
