@@ -9,7 +9,7 @@ docker stop ecom_auth
 docker rm ecom_auth
 docker image build -t ecom_auth:$APP_TAG .
 docker run -d -p $API_LOCAL_IP_ADDRESS:$API_LOCAL_IP_PORT:8080 \
---restart always --log-driver=syslog --log-opt tag=ecom_auth \
+--network ecom-lan --restart always --log-driver=syslog --log-opt tag=ecom_auth \
 -e TZ=Europe/Moscow \
 -e API_LOCAL_IP_ADDRESS=$API_LOCAL_IP_ADDRESS \
 -e API_LOCAL_IP_PORT=$API_LOCAL_IP_PORT \
@@ -26,4 +26,3 @@ docker run -d -p $API_LOCAL_IP_ADDRESS:$API_LOCAL_IP_PORT:8080 \
 -e API_DOMAIN=$API_DOMAIN \
 -e API_PATH=$API_PATH \
 --name ecom_auth ecom_auth:$APP_TAG
---network ecom-lan
