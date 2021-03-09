@@ -26,3 +26,4 @@ docker run -d -p $API_LOCAL_IP_ADDRESS:$API_LOCAL_IP_PORT:8080 \
 -e API_DOMAIN=$API_DOMAIN \
 -e API_PATH=$API_PATH \
 --name ecom_auth ecom_auth:$APP_TAG
+--network ecom-lan
