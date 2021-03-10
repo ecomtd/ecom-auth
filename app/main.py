@@ -22,7 +22,7 @@ app = FastAPI(
     version="0.1.0",
     debug=True,
     docs_url=settings.api_path+"/docs",
-    openapi_url=settings.api_path+"/openapi.json"
+    openapi_url=settings.api_path+"/docs/openapi.json"
 )
 
 
