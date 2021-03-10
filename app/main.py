@@ -20,7 +20,8 @@ app = FastAPI(
     title="E-COM PORTAL Auth API",
     openapi_tags=tags_metadata,
     version="0.1.0",
-    debug=True
+    debug=True,
+    openapi_url="openapi.json"
 )
 
 
