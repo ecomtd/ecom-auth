@@ -21,8 +21,9 @@ app = FastAPI(
     openapi_tags=tags_metadata,
     version="0.1.0",
     debug=True,
-    docs_url=settings.api_path+"/docs",
-    openapi_url=settings.api_path+"/openapi.json"
+    root_path=settings.api_path
+  #  docs_url=settings.api_path+"/docs",
+  #  openapi_url=settings.api_path+"/openapi.json"
 )
 
 
