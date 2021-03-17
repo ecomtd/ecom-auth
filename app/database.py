@@ -14,6 +14,10 @@ async def get_db_connection():
     try:
         yield connection
         connection.commit()
+    except psycopg2.OperationalError as error:
+        connection.rollback()
+        connection.close()
+        raise error
     finally:
         dbpool.putconn(connection)
 
