@@ -79,15 +79,19 @@ async def auth_login(usercredentials: UserCredentials, cursor=Depends(get_db_cur
           responses={401: {"model": ErrorMessage,
                            "description": "Токен пользовательской сессии не действителен"}})
 async def logout(refresh_token: Optional[str] = Cookie(None), cursor=Depends(get_db_cursor)):
-    if refresh_token:
-        cursor.execute("select * from auth.logout(%s)", (refresh_token, ))
-        res = cursor.fetchone()
-        if res["logout_succeeded"]:
-            return Response(status_code=HTTP_200_OK)
+    try:
+        if refresh_token:
+            cursor.execute("select * from auth.logout(%s)", (refresh_token, ))
+            res = cursor.fetchone()
+            if res["logout_succeeded"]:
+                return Response(status_code=HTTP_200_OK)
+            else:
+                return JSONResponse(status_code=HTTP_401_UNAUTHORIZED,
+                                    content={"message": "Пользователь не авторизован"})
         else:
             return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
-    else:
-        return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
+    except Exception as exc:
+        return check_if_error(handle_database_exception(cursor.connection, exc))
 
 
 @app.post("/refresh_tokens", response_model=JWTToken, tags=["Auth"],
@@ -99,25 +103,28 @@ async def logout(refresh_token: Optional[str] = Cookie(None), cursor=Depends(get
                            "description": "Токен пользовательской сессии не действителен"}})
 async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] = Cookie(None),
                          cursor=Depends(get_db_cursor)):
-    if refresh_token:
-        cursor.execute("select * from auth.refreshtokens(%s,%s)", (refresh_token, fingerprint.fingerprint))
-        res = cursor.fetchone()
-        if res["user_id"]:
-            j = JSONResponse(content=jsonable_encoder(
-                JWTToken(access_token=create({"iss": settings.api_domain,
-                                              "sub": res["user_id"],
-                                              "name": res["user_name"],
-                                              "exp": res["access_token_lifetime"]}),
-                         token_type="Bearer")
-            ))
-            j.set_cookie(key="refresh_token",
-                         value=res["refresh_token"],
-                         httponly=True,
-                         domain=settings.api_domain,
-                         path=settings.api_path,
-                         secure=True)
-            return j
+    try:
+        if refresh_token:
+            cursor.execute("select * from auth.refreshtokens(%s,%s)", (refresh_token, fingerprint.fingerprint))
+            res = cursor.fetchone()
+            if res["user_id"]:
+                j = JSONResponse(content=jsonable_encoder(
+                    JWTToken(access_token=create({"iss": settings.api_domain,
+                                                  "sub": res["user_id"],
+                                                  "name": res["user_name"],
+                                                  "exp": res["access_token_lifetime"]}),
+                             token_type="Bearer")
+                ))
+                j.set_cookie(key="refresh_token",
+                             value=res["refresh_token"],
+                             httponly=True,
+                             domain=settings.api_domain,
+                             path=settings.api_path,
+                             secure=True)
+                return j
+            else:
+                return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": res["error_message"]})
         else:
-            return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": res["error_message"]})
-    else:
-        return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
+            return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
+    except Exception as exc:
+        return check_if_error(handle_database_exception(cursor.connection, exc))
