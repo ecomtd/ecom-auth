@@ -45,6 +45,9 @@ def handle_database_exception(connection, exc):
     if type(exc) is psycopg2.errors.RaiseException:  # noqa
         connection.rollback()
         return ErrorMessage(message=str(exc).partition("\n")[0])
+    if type(exc) is psycopg2.errors.AdminShutdown:  # noqa
+        connection.rollback()
+        return ErrorMessage(message=str(exc).partition("\n")[0])
     elif type(exc) is psycopg2.OperationalError:
         connection.bad = True
         logger.error(f"Database exception: {exc}")
