@@ -17,7 +17,7 @@ async def get_db_connection():
     connection = dbpool.getconn()
     try:
         yield connection
-        if connection.closed != 0:
+        if connection.closed == 0:
             connection.commit()
     finally:
         if connection.closed == 0:
