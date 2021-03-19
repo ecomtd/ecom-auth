@@ -15,12 +15,15 @@ dbpool = psycopg2.pool.ThreadedConnectionPool(settings.db_min_connections, setti
 
 async def get_db_connection():
     connection = dbpool.getconn()
+    bad = False
     try:
         yield connection
-        if not connection.bad:
+        if hasattr(connection, "bad"):
+            bad = True
+        if not bad:
             connection.commit()
     finally:
-        dbpool.putconn(connection, close=connection.bad)
+        dbpool.putconn(connection, close=bad)
 
 
 async def get_db_cursor(connection=Depends(get_db_connection)):
