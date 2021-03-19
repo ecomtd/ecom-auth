@@ -17,9 +17,10 @@ async def get_db_connection():
     connection = dbpool.getconn()
     try:
         yield connection
-        connection.commit()
+        if not connection.bad:
+            connection.commit()
     finally:
-        dbpool.putconn(connection)
+        dbpool.putconn(connection, close=connection.bad)
 
 
 async def get_db_cursor(connection=Depends(get_db_connection)):
@@ -42,7 +43,7 @@ def handle_database_exception(connection, exc):
         connection.rollback()
         return ErrorMessage(message=str(exc).partition("\n")[0])
     elif type(exc) is psycopg2.OperationalError:
-        connection.close()
+        connection.bad = True
         logger.error(f"Database exception: {exc}")
         return ErrorMessage(message="try later...")
     else:
