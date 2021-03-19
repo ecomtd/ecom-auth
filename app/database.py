@@ -15,15 +15,15 @@ dbpool = psycopg2.pool.ThreadedConnectionPool(settings.db_min_connections, setti
 
 async def get_db_connection():
     connection = dbpool.getconn()
-    bad = False
     try:
         yield connection
-        if hasattr(connection, "bad"):
-            bad = True
-        if not bad:
+        if connection.closed != 0:
             connection.commit()
     finally:
-        dbpool.putconn(connection, close=bad)
+        if connection.closed == 0:
+            dbpool.putconn(connection)
+        else:
+            dbpool.putconn(connection, close=True)
 
 
 async def get_db_cursor(connection=Depends(get_db_connection)):
@@ -46,11 +46,11 @@ def handle_database_exception(connection, exc):
         connection.rollback()
         return ErrorMessage(message=str(exc).partition("\n")[0])
     if type(exc) is psycopg2.errors.AdminShutdown:  # noqa
-        setattr(connection, "bad", "AdminShutdown")
+        connection.close()
         logger.error(f"Database exception: {exc}")
         return ErrorMessage(message="try later...")
     elif type(exc) is psycopg2.OperationalError:
-        setattr(connection, "bad", "OperationalError")
+        connection.close()
         logger.error(f"Database exception: {exc}")
         return ErrorMessage(message="try later...")
     else:
