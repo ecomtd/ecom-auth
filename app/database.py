@@ -49,13 +49,11 @@ def handle_database_exception(connection, exc):
         connection.rollback()
         return ErrorMessage(message=str(exc).partition("\n")[0])
     if type(exc) is psycopg2.errors.AdminShutdown:  # noqa
-      #  connection.close()
-        connection.reset()
+        connection.close()
         logger.error(f"Database exception: {exc}")
         return ErrorMessage(message="try later...")
     elif type(exc) is psycopg2.OperationalError:
-      #  connection.close()
-        connection.reset()
+        connection.close()
         logger.error(f"Database exception: {exc}")
         return ErrorMessage(message="try later...")
     else:
