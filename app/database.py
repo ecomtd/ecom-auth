@@ -16,21 +16,8 @@ dbpool = psycopg2.pool.ThreadedConnectionPool(minconn=settings.db_min_connection
                                               host=settings.dbip, port=settings.dbport, database=settings.dbname)
 
 
-async def get_db_connection_old():
-    connection = dbpool.getconn()
-    try:
-        yield connection
-        if connection.closed == 0:
-            connection.commit()
-    finally:
-        if connection.closed == 0:
-            dbpool.putconn(connection)
-        else:
-            dbpool.putconn(connection, close=True)
-
-
 async def get_db_connection():
-    tries_count = int(settings.db_max_connections)
+    tries_count = int(settings.db_max_connections)*int(settings.workers_count)
     connection_active = False
     connection = dbpool.getconn()
     while tries_count > 0 and not connection_active:
