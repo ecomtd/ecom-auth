@@ -48,7 +48,7 @@ async def get_db_connection():
 
 
 async def get_db_cursor(connection=Depends(get_db_connection)):
-    cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     try:
         yield cursor
     finally:
