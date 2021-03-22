@@ -7,7 +7,7 @@ import hashlib
 import app.settings as settings
 from app.token import create
 from app.database import get_db_cursor, handle_database_exception, check_if_error
-from app.models import JWTToken, UserCredentials, ErrorMessage, Fingerprint
+from app.model import JWTToken, UserCredentials, ErrorMessage, Fingerprint
 
 tags_metadata = [
     {

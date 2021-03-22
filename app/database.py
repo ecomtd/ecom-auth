@@ -6,7 +6,7 @@ import psycopg2
 from psycopg2 import pool, extras
 from fastapi import Depends
 from fastapi.logger import logger
-from app.models import ErrorMessage
+from app.model import ErrorMessage
 
 
 dbpool = psycopg2.pool.ThreadedConnectionPool(minconn=settings.db_min_connections, maxconn=settings.db_max_connections,
