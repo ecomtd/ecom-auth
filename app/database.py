@@ -30,7 +30,7 @@ async def get_db_connection_old():
 
 
 async def get_db_connection():
-    tries_count = settings.db_max_connections
+    tries_count = int(settings.db_max_connections)
     connection_active = False
     connection = dbpool.getconn()
     while tries_count > 0 and not connection_active:
