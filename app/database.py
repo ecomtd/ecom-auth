@@ -42,8 +42,10 @@ async def get_db_connection():
                 connection_active = True
             finally:
                 cursor.close()
-        except (psycopg2.errors.AdminShutdown, psycopg2.OperationalError):   # noqa
+        except (psycopg2.errors.AdminShutdown, psycopg2.OperationalError) as exc:   # noqa
             dbpool.putconn(connection, close=True)
+            logger.error(f"Database connection failed: {exc}")
+            logger.error("Reconnecting.....")
             tries_count -= 1
             if tries_count == 0:
                 raise
