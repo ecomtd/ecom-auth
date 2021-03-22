@@ -35,7 +35,7 @@ async def get_db_connection():
     connection = dbpool.getconn()
     while tries_count > 0 and not connection_active:
         try:
-            cursor = connection.cursor
+            cursor = connection.cursor()
             try:
                 cursor.execute("select 1")
                 cursor.fetchone()
