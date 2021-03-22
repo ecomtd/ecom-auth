@@ -9,8 +9,6 @@ from fastapi.logger import logger
 from app.models import ErrorMessage
 
 
-logger.error(f"Database pool minconn=: {settings.db_min_connections}")
-logger.error(f"Database pool maxconn=: {settings.db_max_connections}")
 dbpool = psycopg2.pool.ThreadedConnectionPool(minconn=settings.db_min_connections, maxconn=settings.db_max_connections,
                                               user=settings.dbusr, password=settings.dbpwd,
                                               host=settings.dbip, port=settings.dbport, database=settings.dbname)
