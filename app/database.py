@@ -1,6 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
-from starlette.status import HTTP_400_BAD_REQUEST
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 import app.settings as settings
 import psycopg2
 from psycopg2 import pool, extras
@@ -60,6 +60,13 @@ def check_if_error(obj):
         return JSONResponse(status_code=HTTP_400_BAD_REQUEST, content=jsonable_encoder(obj))
     else:
         return obj
+
+
+def check_if_empty_list(obj):
+    return obj[0] \
+        if len(obj) > 0 \
+        else JSONResponse(status_code=HTTP_404_NOT_FOUND,
+                          content=jsonable_encoder(ErrorMessage(code=404, message="Запрошенный объект не найден")))
 
 
 def handle_database_exception(connection, exc):
