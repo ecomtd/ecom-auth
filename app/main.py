@@ -112,7 +112,10 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
                     JWTToken(access_token=create({"iss": settings.api_domain,
                                                   "sub": res["user_id"],
                                                   "name": res["user_name"],
-                                                  "exp": res["access_token_lifetime"]}),
+                                                  "exp": res["access_token_lifetime"],
+                                                  "customer_code": res["customer_code"],
+                                                  "customer_name": res["customer_name"],
+                                                  "services": res["services"]}),
                              token_type="Bearer")
                 ))
                 j.set_cookie(key="refresh_token",
