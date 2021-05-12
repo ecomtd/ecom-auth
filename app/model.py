@@ -4,9 +4,9 @@ from pydantic import BaseModel, Field
 
 
 class UserCredentials(BaseModel):
-    login: str = Field(None, title="Имя пользователя")
-    password: str = Field(None, title="Пароль")
-    fingerprint: str = Field(None, title="Отпечаток клиентского приложения", max_length=255)
+    login: str = Field(title="Имя пользователя")
+    password: str = Field(title="Пароль")
+    fingerprint: str = Field(title="Отпечаток клиентского приложения", max_length=255)
 
 
 class Fingerprint(BaseModel):
