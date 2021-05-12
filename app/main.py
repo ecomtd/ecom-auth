@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import FastAPI, Depends, Cookie
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse, Response
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_200_OK
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_200_OK, HTTP_403_FORBIDDEN
 import hashlib
 import app.settings as settings
 from app.token import create
@@ -30,13 +30,17 @@ app = FastAPI(
           description="Авторизация пользователя в системе по email и паролю",
           response_description="При успешной авторизации возвращается token-ы, "
                                "которыг могут использоваться для доступа к API",
-          responses={401: {"model": ErrorMessage,
+          responses={403: {"model": ErrorMessage,
                            "description": "При неуспешной авторизации возвращается информация об ошибке  \n\n"
                            "Тип ошибки может быть определён значением атрибута **code**  \n"
                            "Возможные значения:  \n"
                            "- **1**: ошибка авторизации, информация в **message**  \n"
                            "- **2**: срок действия пароля истёк, требуется его смена"}})
 async def auth_login(usercredentials: UserCredentials, cursor=Depends(get_db_cursor)):
+    if len(usercredentials.password) < 8:
+        return JSONResponse(status_code=HTTP_403_FORBIDDEN,
+                            content=jsonable_encoder(ErrorMessage(code=1,
+                                                                  message="Пароль должен быть не менее 8 символов")))
     try:
         cursor.execute("select * from auth.login(%s,%s,%s)",
                        (usercredentials.login,
@@ -66,7 +70,7 @@ async def auth_login(usercredentials: UserCredentials, cursor=Depends(get_db_cur
                              secure=True)
                 return j
         else:
-            return JSONResponse(status_code=HTTP_401_UNAUTHORIZED,
+            return JSONResponse(status_code=HTTP_403_FORBIDDEN,
                                 content=jsonable_encoder(ErrorMessage(code=1, message=res["error_message"])))
     except Exception as exc:
         return check_if_error(handle_database_exception(cursor.connection, exc))
