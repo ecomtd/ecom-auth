@@ -110,6 +110,7 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
                          cursor=Depends(get_db_cursor)):
     print("now =", datetime.now())
     print("refresh_token =", refresh_token)
+    print("fingerprint = ", fingerprint)
     try:
         if refresh_token:
             cursor.execute("select * from auth.refreshtokens(%s,%s)", (refresh_token, fingerprint.fingerprint))
@@ -136,6 +137,6 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
             else:
                 return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": res["error_message"]})
         else:
-            return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
+            return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован блин"})
     except Exception as exc:
         return check_if_error(handle_database_exception(cursor.connection, exc))
