@@ -114,6 +114,7 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
         if refresh_token:
             cursor.execute("select * from auth.refreshtokens(%s,%s)", (refresh_token, fingerprint.fingerprint))
             res = cursor.fetchone()
+            print(res)
             if res["user_id"]:
                 j = JSONResponse(content=jsonable_encoder(
                     JWTToken(access_token=create({"iss": settings.api_domain,
