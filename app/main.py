@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, Depends, Cookie
 from fastapi.encoders import jsonable_encoder
@@ -107,6 +108,8 @@ async def logout(refresh_token: Optional[str] = Cookie(None), cursor=Depends(get
                            "description": "Токен пользовательской сессии не действителен"}})
 async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] = Cookie(None),
                          cursor=Depends(get_db_cursor)):
+    print("now =", datetime.now())
+    print("refresh_token =", refresh_token)
     try:
         if refresh_token:
             cursor.execute("select * from auth.refreshtokens(%s,%s)", (refresh_token, fingerprint.fingerprint))
