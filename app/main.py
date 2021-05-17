@@ -48,6 +48,7 @@ async def auth_login(usercredentials: UserCredentials, cursor=Depends(get_db_cur
                         hashlib.sha512(usercredentials.password.encode('utf-8')).hexdigest(),
                         usercredentials.fingerprint))
         res = cursor.fetchone()
+        print(res)
         if res["user_id"]:
             if res["user_id"] < 0:
                 return JSONResponse(status_code=HTTP_401_UNAUTHORIZED,
