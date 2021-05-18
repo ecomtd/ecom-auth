@@ -69,8 +69,7 @@ async def auth_login(usercredentials: UserCredentials, cursor=Depends(get_db_cur
                              httponly=True,
                              domain=settings.api_domain,
                              path=settings.api_path,
-                             secure=True,
-                             samesite=None)
+                             secure=True)
                 return j
         else:
             return JSONResponse(status_code=HTTP_403_FORBIDDEN,
@@ -134,8 +133,7 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
                              httponly=True,
                              domain=settings.api_domain,
                              path=settings.api_path,
-                             secure=True,
-                             samesite=None)
+                             secure=True)
                 return j
             else:
                 return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": res["error_message"]})
