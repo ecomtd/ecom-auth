@@ -138,6 +138,6 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
             else:
                 return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": res["error_message"]})
         else:
-            return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован блин"})
+            return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
     except Exception as exc:
         return check_if_error(handle_database_exception(cursor.connection, exc))
