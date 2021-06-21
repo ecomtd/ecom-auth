@@ -25,3 +25,8 @@ class ErrorMessage(BaseModel):
     message: str = Field(
         None, title="Текст с описанием ошибки", max_length=255
     )
+
+
+class QRCredentials(BaseModel):
+    qr: str = Field(title="QR код авторизации")
+    fingerprint: str = Field(title="Отпечаток клиентского приложения", max_length=255)

@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, Depends, Cookie
 from fastapi.encoders import jsonable_encoder
@@ -6,9 +5,10 @@ from starlette.responses import JSONResponse, Response
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_200_OK, HTTP_403_FORBIDDEN
 import hashlib
 import app.settings as settings
-from app.token import create
+from app.qr_encoding import encrypt_credentials, decrypt_credentials
+from app.token import create, get_user_id
 from app.database import get_db_cursor, handle_database_exception, check_if_error
-from app.model import JWTToken, UserCredentials, ErrorMessage, Fingerprint
+from app.model import JWTToken, UserCredentials, ErrorMessage, Fingerprint, QRCredentials
 
 tags_metadata = [
     {
@@ -48,7 +48,6 @@ async def auth_login(usercredentials: UserCredentials, cursor=Depends(get_db_cur
                         hashlib.sha512(usercredentials.password.encode('utf-8')).hexdigest(),
                         usercredentials.fingerprint))
         res = cursor.fetchone()
-        print(res)
         if res["user_id"]:
             if res["user_id"] < 0:
                 return JSONResponse(status_code=HTTP_401_UNAUTHORIZED,
@@ -109,14 +108,10 @@ async def logout(refresh_token: Optional[str] = Cookie(None), cursor=Depends(get
                            "description": "Токен пользовательской сессии не действителен"}})
 async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] = Cookie(None),
                          cursor=Depends(get_db_cursor)):
-    print("now =", datetime.now())
-    print("refresh_token =", refresh_token)
-    print("fingerprint = ", fingerprint)
     try:
         if refresh_token:
             cursor.execute("select * from auth.refreshtokens(%s,%s)", (refresh_token, fingerprint.fingerprint))
             res = cursor.fetchone()
-            print(res)
             if res["user_id"]:
                 j = JSONResponse(content=jsonable_encoder(
                     JWTToken(access_token=create({"iss": settings.api_domain,
@@ -139,5 +134,73 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
                 return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": res["error_message"]})
         else:
             return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
+    except Exception as exc:
+        return check_if_error(handle_database_exception(cursor.connection, exc))
+
+
+@app.get("/auth_qr", response_model=str, tags=["Auth"],
+         summary="Получение QR кода для авторизации",
+         description="Получение кода для авторизации в приложениях, где есть вход по QR коду",
+         responses={
+             400: {
+                 "model": ErrorMessage,
+                 "description": "Ошибка при выполнении операции"
+             },
+             401: {
+                 "model": ErrorMessage,
+                 "description": "Токен пользовательской сессии не действителен"
+             }
+         })
+async def get_auth_qr(user_id: int = Depends(get_user_id), cursor=Depends(get_db_cursor)):
+    try:
+        cursor.execute("select * from auth.getloginandpasswordhash(%s) as credentials", (user_id,))
+        res = cursor.fetchone()
+        credentials = res["credentials"]
+        return encrypt_credentials(credentials)
+    except Exception as exc:
+        return check_if_error(handle_database_exception(cursor.connection, exc))
+
+
+@app.post("/auth_qr", response_model=JWTToken, tags=["Auth"],
+          summary="Авторизация в системе по QR коду",
+          description="Авторизация пользователя в системе по QR коду",
+          response_description="При успешной авторизации возвращается token-ы, "
+                               "которыг могут использоваться для доступа к API",
+          responses={403: {"model": ErrorMessage,
+                           "description": "При неуспешной авторизации возвращается информация об ошибке  \n\n"
+                           "Тип ошибки может быть определён значением атрибута **code**  \n"
+                           "Возможные значения:  \n"
+                           "- **1**: ошибка авторизации, информация в **message**  \n"
+                           "- **2**: срок действия пароля истёк, требуется его смена"}})
+async def auth_by_qr(qrcredentials: QRCredentials, cursor=Depends(get_db_cursor)):
+    credentials = decrypt_credentials(qrcredentials.qr)
+    try:
+        cursor.execute("select * from auth.loginbyqrcode(%s,%s)", (credentials, qrcredentials.fingerprint))
+        res = cursor.fetchone()
+        if res["user_id"]:
+            if res["user_id"] < 0:
+                return JSONResponse(status_code=HTTP_401_UNAUTHORIZED,
+                                    content=jsonable_encoder(ErrorMessage(code=2, message=res["error_message"])))
+            else:
+                j = JSONResponse(content=jsonable_encoder(
+                    JWTToken(access_token=create({"iss": settings.api_domain,
+                                                  "sub": res["user_id"],
+                                                  "name": res["user_name"],
+                                                  "exp": res["access_token_lifetime"],
+                                                  "customer_code": res["customer_code"],
+                                                  "customer_name": res["customer_name"],
+                                                  "services": res["services"]}),
+                             token_type="Bearer")
+                ))
+                j.set_cookie(key="refresh_token",
+                             value=res["refresh_token"],
+                             httponly=True,
+                             domain=settings.api_domain,
+                             path=settings.api_path,
+                             secure=True)
+                return j
+        else:
+            return JSONResponse(status_code=HTTP_403_FORBIDDEN,
+                                content=jsonable_encoder(ErrorMessage(code=1, message=res["error_message"])))
     except Exception as exc:
         return check_if_error(handle_database_exception(cursor.connection, exc))
