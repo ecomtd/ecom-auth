@@ -138,7 +138,7 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
         return check_if_error(handle_database_exception(cursor.connection, exc))
 
 
-@app.get("/auth_qr", response_model=str, tags=["Auth"],
+@app.get("/qr", response_model=str, tags=["Auth"],
          summary="Получение QR кода для авторизации",
          description="Получение кода для авторизации в приложениях, где есть вход по QR коду",
          responses={
@@ -151,7 +151,7 @@ async def refresh_tokens(fingerprint: Fingerprint, refresh_token: Optional[str] 
                  "description": "Токен пользовательской сессии не действителен"
              }
          })
-async def get_auth_qr(user_id: int = Depends(get_user_id), cursor=Depends(get_db_cursor)):
+async def get_qr(user_id: int = Depends(get_user_id), cursor=Depends(get_db_cursor)):
     try:
         cursor.execute("select * from auth.getloginandpasswordhash(%s) as credentials", (user_id,))
         res = cursor.fetchone()
@@ -161,7 +161,7 @@ async def get_auth_qr(user_id: int = Depends(get_user_id), cursor=Depends(get_db
         return check_if_error(handle_database_exception(cursor.connection, exc))
 
 
-@app.post("/auth_qr", response_model=JWTToken, tags=["Auth"],
+@app.post("/login_by_qr", response_model=JWTToken, tags=["Auth"],
           summary="Авторизация в системе по QR коду",
           description="Авторизация пользователя в системе по QR коду",
           response_description="При успешной авторизации возвращается token-ы, "
@@ -172,7 +172,7 @@ async def get_auth_qr(user_id: int = Depends(get_user_id), cursor=Depends(get_db
                            "Возможные значения:  \n"
                            "- **1**: ошибка авторизации, информация в **message**  \n"
                            "- **2**: срок действия пароля истёк, требуется его смена"}})
-async def auth_by_qr(qrcredentials: QRCredentials, cursor=Depends(get_db_cursor)):
+async def login_by_qr(qrcredentials: QRCredentials, cursor=Depends(get_db_cursor)):
     credentials = decrypt_credentials(qrcredentials.qr)
     try:
         cursor.execute("select * from auth.loginbyqrcode(%s,%s)", (credentials, qrcredentials.fingerprint))
