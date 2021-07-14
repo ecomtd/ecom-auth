@@ -121,3 +121,5 @@ def decrypt_credentials(credentials):
         return aes_decrypt_b64(decode_base64(auth_qr_aes_key), credentials).decode('utf8')
     except binascii.Error:
         pass
+    except ValueError:
+        pass
