@@ -174,6 +174,8 @@ async def get_qr(user_id: int = Depends(get_user_id), cursor=Depends(get_db_curs
                            "- **2**: срок действия пароля истёк, требуется его смена"}})
 async def login_by_qr(qrcredentials: QRCredentials, cursor=Depends(get_db_cursor)):
     credentials = decrypt_credentials(qrcredentials.qr)
+    if not credentials:
+        return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={"message": "Пользователь не авторизован"})
     try:
         cursor.execute("select * from auth.loginbyqrcode(%s,%s)", (credentials, qrcredentials.fingerprint))
         res = cursor.fetchone()

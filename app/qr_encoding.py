@@ -1,3 +1,5 @@
+import binascii
+
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -115,4 +117,7 @@ def encrypt_credentials(credentials):
 
 
 def decrypt_credentials(credentials):
-    return aes_decrypt_b64(decode_base64(auth_qr_aes_key), credentials).decode('utf8')
+    try:
+        return aes_decrypt_b64(decode_base64(auth_qr_aes_key), credentials).decode('utf8')
+    except binascii.Error:
+        pass
