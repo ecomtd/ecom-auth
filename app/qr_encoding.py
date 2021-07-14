@@ -103,9 +103,16 @@ def aes_decrypt_b64(key, enc_data_b64):
     return output
 
 
+def decode_base64(data):
+    missing_padding = len(data) % 4
+    if missing_padding:
+        data += '=' * (4 - missing_padding)
+    return base64.b64decode(data)
+
+
 def encrypt_credentials(credentials):
-    return aes_encrypt_b64(base64.b64decode(auth_qr_aes_key), to_bytes(credentials))
+    return aes_encrypt_b64(decode_base64(auth_qr_aes_key), to_bytes(credentials))
 
 
 def decrypt_credentials(credentials):
-    return aes_decrypt_b64(base64.b64decode(auth_qr_aes_key), credentials).decode('utf8')
+    return aes_decrypt_b64(decode_base64(auth_qr_aes_key), credentials).decode('utf8')
